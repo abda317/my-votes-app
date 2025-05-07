@@ -25,7 +25,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             rm -rf ~/my-voting-app
-            git clone https://github.com/abda317/lks-votes-app.git ~/my-voting-app
+            git clone https://github.com/abda317/my-votes-app.git ~/my-voting-app
             cd ~/my-voting-app
             docker stack deploy -c docker-compose.yml voting
           EOF
