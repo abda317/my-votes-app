@@ -1,40 +1,23 @@
-version: "3"
+name: Deploy to Docker Swarm
 
-services:
-  vote:
-    image: dockersamples/examplevotingapp_vote:latest
-    ports:
-      - "5005:80"
-    networks:
-      - frontend
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-  result:
-    image: dockersamples/examplevotingapp_result:latest
-    ports:
-      - "5006:80"
-    networks:
-      - backend
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-  worker:
-    image: dockersamples/examplevotingapp_worker:latest
-    networks:
-      - frontend
-      - backend
-
-  redis:
-    image: redis:alpine
-    networks:
-      - frontend
-
-  db:
-    image: postgres:9.4
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: votes
-    networks:
-      - backend
-
-networks:
-  frontend:
-  backend:
+      - name: Copy files via SSH and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            docker stack deploy -c docker-compose.yml my-voting-app
