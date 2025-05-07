@@ -1,32 +1,40 @@
-name: Deploy to EC2 (Docker Swarm)
+version: "3"
 
-on:
-  push:
-    branches:
-      - main
+services:
+  vote:
+    image: dockersamples/examplevotingapp_vote:latest
+    ports:
+      - "5005:80"
+    networks:
+      - frontend
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+  result:
+    image: dockersamples/examplevotingapp_result:latest
+    ports:
+      - "5006:80"
+    networks:
+      - backend
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+  worker:
+    image: dockersamples/examplevotingapp_worker:latest
+    networks:
+      - frontend
+      - backend
 
-      - name: Set up SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+  redis:
+    image: redis:alpine
+    networks:
+      - frontend
 
-      - name: Deploy to EC2 via SSH
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-            if [ ! -d "~/my-voting-app/.git" ]; then
-              git clone https://github.com/abda317/lks-votes-app.git ~/my-voting-app
-            fi
-            cd ~/my-voting-app
-            git pull origin main
-            docker stack deploy -c docker-stack.yml voting
-          EOF
+  db:
+    image: postgres:9.4
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: votes
+    networks:
+      - backend
+
+networks:
+  frontend:
+  backend:
