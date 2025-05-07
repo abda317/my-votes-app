@@ -24,7 +24,8 @@ jobs:
       - name: Deploy to EC2 via SSH
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-            cd ~/my-voting-app || git clone https://github.com/abda317/lks-votes-app.git ~/my-voting-app && cd ~/my-voting-app
-            git pull origin main
+            rm -rf ~/my-voting-app
+            git clone https://github.com/abda317/lks-votes-app.git ~/my-voting-app
+            cd ~/my-voting-app
             docker stack deploy -c docker-compose.yml voting
           EOF
