@@ -2,18 +2,16 @@ version: '3.8'
 
 services:
   frontend:
-    build:
-      context: ./frontend
+    image: abda317/my-frontend:latest
     ports:
-      - "80:80"
+      - "5005:80"
     networks:
       - voting-network
     depends_on:
       - backend
 
   backend:
-    build:
-      context: ./backend
+    image: abda317/my-backend:latest
     environment:
       - DB_HOST=db
     networks:
